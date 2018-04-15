@@ -24,9 +24,6 @@ export class AppComponent {
   }
 
   next() {
-    const toDelete = [];
-    const toSpawn = [];
-
     const cells = document.body.querySelectorAll('td');
 
     for (let i = 0; i < cells.length; i++) {
@@ -35,19 +32,15 @@ export class AppComponent {
       const neighbors = this.countNeighbors(x, y);
       const isLive = this.getCell(x, y).classList.contains('marked');
 
-      console.log(isLive, neighbors);
+      console.log(`(${x},${y})`, isLive, neighbors);
 
       if (isLive && (neighbors < 2 || neighbors > 3)) {
-        toDelete.push([x, y]);
+        cells.item(y * this.WIDTH + x).classList.remove('marked');
       } else if (!isLive && (neighbors === 3)) {
-        console.log('spawn: ', x, y);
+        cells.item(y * this.WIDTH + x).classList.add('marked');
       }
 
     }
-
-    console.log("toDelete: ", toDelete);
-
-    // this.refresh();
   }
 
   getCell(x, y) {
@@ -55,12 +48,49 @@ export class AppComponent {
   }
 
   countNeighbors(x, y) {
-    const counter = this.marked
-      .filter(cell => ((cell[0] !== x || cell[1] !== y) && Math.abs(cell[0] - x) < 2 && Math.abs(cell[1] - y) < 2))
-      .length;
+    let counter = 0;
+    const cells = document.body.querySelectorAll('td');
+    const neighbors = [];
 
-    // console.log(`(${x},${y}): ${counter}`);
+    if (x > 0) {
+      neighbors.push([x - 1, y]);
 
+      if (y > 0) {
+        neighbors.push([x - 1, y - 1]);
+      }
+
+      if (y < this.HEIGHT - 1) {
+        neighbors.push([x - 1, y + 1]);
+      }
+    }
+
+    if (x < this.WIDTH - 1) {
+      neighbors.push([x + 1, y]);
+
+      if (y > 0) {
+        neighbors.push([x + 1, y - 1]);
+      }
+
+      if (y < this.HEIGHT - 1) {
+        neighbors.push([x + 1, y + 1]);
+      }
+    }
+
+    if (y > 0) {
+      neighbors.push([x, y - 1]);
+    }
+
+    if (y < this.HEIGHT - 1) {
+      neighbors.push([x, y + 1]);
+    }
+
+    neighbors.map(cell => {
+      const cellIdx = cell[1] * this.WIDTH + cell[0];
+
+      if (cells.item(cellIdx).classList.contains('marked')) {
+        counter++;
+      }
+    });
 
     return counter;
   }
@@ -71,12 +101,5 @@ export class AppComponent {
     for (let i = 0; i < cells.length; i++) {
       cells.item(i).classList.remove('marked');
     }
-
-    this.marked.map(cell => {
-      console.log(cell);
-
-      cells.item(cell[1] * 10 + cell[0]).classList.add('marked');
-    });
-
-    }
   }
+}
