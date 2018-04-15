@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { viewClassName } from '@angular/compiler';
 
 @Component({
   selector: 'app-root',
@@ -8,6 +9,9 @@ import { Component } from '@angular/core';
 export class AppComponent {
   readonly WIDTH = 10;
   readonly HEIGHT = 10;
+
+  speed = 500;
+  state = 'Pause';
 
   getArray(size) {
     return new Array(size).fill(0).map((item, idx) => idx);
@@ -25,6 +29,8 @@ export class AppComponent {
 
   next() {
     const cells = document.body.querySelectorAll('td');
+    const dying = [];
+    const spawning = [];
 
     for (let i = 0; i < cells.length; i++) {
       const x = i % this.WIDTH;
@@ -32,15 +38,17 @@ export class AppComponent {
       const neighbors = this.countNeighbors(x, y);
       const isLive = this.getCell(x, y).classList.contains('marked');
 
-      console.log(`(${x},${y})`, isLive, neighbors);
+      // console.log(`(${x},${y})`, isLive, neighbors);
 
       if (isLive && (neighbors < 2 || neighbors > 3)) {
-        cells.item(y * this.WIDTH + x).classList.remove('marked');
+        dying.push(y * this.WIDTH + x);
       } else if (!isLive && (neighbors === 3)) {
-        cells.item(y * this.WIDTH + x).classList.add('marked');
+        spawning.push(y * this.WIDTH + x);
       }
-
     }
+
+    spawning.map(cellIdx => cells.item(cellIdx).classList.add('marked'));
+    dying.map(cellIdx => cells.item(cellIdx).classList.remove('marked'));
   }
 
   getCell(x, y) {
@@ -95,11 +103,34 @@ export class AppComponent {
     return counter;
   }
 
-  refresh() {
+  autoplay() {
+    this.next();
+
+    if (this.state === 'Play') {
+      setTimeout(this.autoplay.bind(this), this.speed);
+    }
+  }
+
+
+  play() {
+    this.state = this.state === 'Play' ? 'Pause' : 'Play';
+
+    if (this.state === 'Play') {
+      this.autoplay();
+    }
+  }
+
+  analyze() {
     const cells = document.body.querySelectorAll('td');
 
-    for (let i = 0; i < cells.length; i++) {
-      cells.item(i).classList.remove('marked');
+    for (let y = 0; y < this.HEIGHT; y++) {
+      for (let x = 0; x < this.WIDTH; x++) {
+        cells.item(y * this.WIDTH + x).innerHTML = this.countNeighbors(x, y).toString();
+      }
     }
+  }
+
+  get otherState() {
+    return this.state === 'Play' ? 'Pause' : 'Play';
   }
 }
