@@ -1,15 +1,23 @@
-<table>
-  <tbody>
-    <tr *ngFor="let row of getArray(10)">
-      <td *ngFor="let cell of getArray(10)"
-        (click)="mark($event, cell, row)"></td>
-    </tr>
-  </tbody>
-</table>
+{{boardSize}} {{getArray(boardSize)}}
 
-<button (click)="clear()">Clear</button>
-<button (click)="analyze()">Analyze</button>
-<button (click)="next()">Next</button>
-<button (click)="playPause()">{{otherState}}</button>
-<br>
-<input type="range" max="100" min="1" (change)="onChangeSpeed($event)">
+<div style="display: block; width: 100%; height: 100%; background: pink;">
+  <table style="display: block; float: left; width: 50%;">
+    <tbody>
+      <tr *ngFor="let row of getArray(boardSize)">
+        <td *ngFor="let cell of getArray(boardSize)"
+          (click)="mark($event, cell, row)"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="background: white; width: 20%; float: left; border: 2px solid red;">
+    <button (click)="clear()">Clear</button>
+    <button (click)="analyze()">Analyze</button>
+    <button (click)="next()">Next</button>
+    <button (click)="playPause()">{{otherState}}</button>
+    <br>
+    <input type="range" min="1" max="100" (change)="onChangeSpeed($event)">
+    <br>
+    <input type="number" min="10" max="20" [(ngModel)]="boardSize">
+  </div>
+</div>

@@ -8,8 +8,7 @@ import { viewClassName } from '@angular/compiler';
 })
 export class AppComponent implements AfterViewInit {
   timeout: number;
-  readonly WIDTH = 10;
-  readonly HEIGHT = 10;
+  _boardSize = 10;
 
   cells: any;
 
@@ -20,8 +19,10 @@ export class AppComponent implements AfterViewInit {
     this.cells = document.body.querySelectorAll('td');
   }
 
-  getArray(size) {
-    return new Array(size).fill(0).map((item, idx) => idx);
+  getArray(size: number) {
+    const result = new Array(size).fill(0).map((item, idx) => idx);
+
+    return result;
   }
 
   mark(event, x, y) {
@@ -43,17 +44,17 @@ export class AppComponent implements AfterViewInit {
     const spawning = [];
 
     for (let i = 0; i < this.cells.length; i++) {
-      const x = i % this.WIDTH;
-      const y = Math.floor(i / this.WIDTH);
+      const x = i % this.boardSize;
+      const y = Math.floor(i / this.boardSize);
       const neighbors = this.countNeighbors(x, y);
       const isLive = this.getCell(x, y).classList.contains('marked');
 
       // console.log(`(${x},${y})`, isLive, neighbors);
 
       if (isLive && (neighbors < 2 || neighbors > 3)) {
-        dying.push(y * this.WIDTH + x);
+        dying.push(y * this.boardSize + x);
       } else if (!isLive && (neighbors === 3)) {
-        spawning.push(y * this.WIDTH + x);
+        spawning.push(y * this.boardSize + x);
       }
     }
 
@@ -62,7 +63,9 @@ export class AppComponent implements AfterViewInit {
   }
 
   getCell(x, y) {
-    return this.cells.item(y * this.WIDTH + x);
+    const result = this.cells.item(y * this.boardSize + x);
+
+    return result;
   }
 
   countNeighbors(x, y) {
@@ -76,19 +79,19 @@ export class AppComponent implements AfterViewInit {
         neighbors.push([x - 1, y - 1]);
       }
 
-      if (y < this.HEIGHT - 1) {
+      if (y < this.boardSize - 1) {
         neighbors.push([x - 1, y + 1]);
       }
     }
 
-    if (x < this.WIDTH - 1) {
+    if (x < this.boardSize - 1) {
       neighbors.push([x + 1, y]);
 
       if (y > 0) {
         neighbors.push([x + 1, y - 1]);
       }
 
-      if (y < this.HEIGHT - 1) {
+      if (y < this.boardSize - 1) {
         neighbors.push([x + 1, y + 1]);
       }
     }
@@ -97,7 +100,7 @@ export class AppComponent implements AfterViewInit {
       neighbors.push([x, y - 1]);
     }
 
-    if (y < this.HEIGHT - 1) {
+    if (y < this.boardSize - 1) {
       neighbors.push([x, y + 1]);
     }
 
@@ -132,9 +135,9 @@ export class AppComponent implements AfterViewInit {
   analyze() {
     const cells = document.body.querySelectorAll('td');
 
-    for (let y = 0; y < this.HEIGHT; y++) {
-      for (let x = 0; x < this.WIDTH; x++) {
-        cells.item(y * this.WIDTH + x).innerHTML = this.countNeighbors(x, y).toString();
+    for (let y = 0; y < this.boardSize; y++) {
+      for (let x = 0; x < this.boardSize; x++) {
+        cells.item(y * this.boardSize + x).innerHTML = this.countNeighbors(x, y).toString();
       }
     }
   }
@@ -149,13 +152,27 @@ export class AppComponent implements AfterViewInit {
     }
   }
 
-  onChangeSpeed($event) {
-    this.speed = 1000 / $event.currentTarget.value;
-console.log(this.speed);
+  onChangeSpeed(e) {
+    this.speed = 1000 / e.currentTarget.value;
 
     clearTimeout(this.timeout);
 
     this.autoplay();
+  }
+
+   set boardSize(e) {
+    this._boardSize = e;
+
+    this.cells = document.body.querySelectorAll('td');
+  }
+
+  get boardSize() {
+    return this._boardSize;
+  }
+
+  setBoardSize(e) {
+    console.log(e);
+
   }
 
   get otherState() {
