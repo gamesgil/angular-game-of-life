@@ -7,6 +7,9 @@
   </tbody>
 </table>
 
+<button (click)="clear()">Clear</button>
 <button (click)="analyze()">Analyze</button>
 <button (click)="next()">Next</button>
-<button (click)="play()">{{otherState}}</button>
+<button (click)="playPause()">{{otherState}}</button>
+<br>
+<input type="range" max="100" min="1" (change)="onChangeSpeed($event)">

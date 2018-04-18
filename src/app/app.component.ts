@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, AfterViewInit } from '@angular/core';
 import { viewClassName } from '@angular/compiler';
 
 @Component({
@@ -6,12 +6,19 @@ import { viewClassName } from '@angular/compiler';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
+  timeout: number;
   readonly WIDTH = 10;
   readonly HEIGHT = 10;
 
+  cells: any;
+
   speed = 500;
   state = 'Pause';
+
+  ngAfterViewInit() {
+    this.cells = document.body.querySelectorAll('td');
+  }
 
   getArray(size) {
     return new Array(size).fill(0).map((item, idx) => idx);
@@ -25,14 +32,17 @@ export class AppComponent {
     } else {
       cell.classList.remove('marked');
     }
+
+    if (this.state === 'Play') {
+      this.playPause();
+    }
   }
 
   next() {
-    const cells = document.body.querySelectorAll('td');
     const dying = [];
     const spawning = [];
 
-    for (let i = 0; i < cells.length; i++) {
+    for (let i = 0; i < this.cells.length; i++) {
       const x = i % this.WIDTH;
       const y = Math.floor(i / this.WIDTH);
       const neighbors = this.countNeighbors(x, y);
@@ -47,17 +57,16 @@ export class AppComponent {
       }
     }
 
-    spawning.map(cellIdx => cells.item(cellIdx).classList.add('marked'));
-    dying.map(cellIdx => cells.item(cellIdx).classList.remove('marked'));
+    spawning.map(cellIdx => this.cells.item(cellIdx).classList.add('marked'));
+    dying.map(cellIdx => this.cells.item(cellIdx).classList.remove('marked'));
   }
 
   getCell(x, y) {
-    return document.body.querySelectorAll('td').item(y * this.WIDTH + x);
+    return this.cells.item(y * this.WIDTH + x);
   }
 
   countNeighbors(x, y) {
     let counter = 0;
-    const cells = document.body.querySelectorAll('td');
     const neighbors = [];
 
     if (x > 0) {
@@ -93,9 +102,7 @@ export class AppComponent {
     }
 
     neighbors.map(cell => {
-      const cellIdx = cell[1] * this.WIDTH + cell[0];
-
-      if (cells.item(cellIdx).classList.contains('marked')) {
+      if (this.getCell(cell[0], cell[1]).classList.contains('marked')) {
         counter++;
       }
     });
@@ -107,16 +114,18 @@ export class AppComponent {
     this.next();
 
     if (this.state === 'Play') {
-      setTimeout(this.autoplay.bind(this), this.speed);
+      this.timeout = setTimeout(this.autoplay.bind(this), this.speed);
     }
   }
 
 
-  play() {
+  playPause() {
     this.state = this.state === 'Play' ? 'Pause' : 'Play';
 
     if (this.state === 'Play') {
       this.autoplay();
+    } else {
+      clearTimeout(this.timeout);
     }
   }
 
@@ -128,6 +137,25 @@ export class AppComponent {
         cells.item(y * this.WIDTH + x).innerHTML = this.countNeighbors(x, y).toString();
       }
     }
+  }
+
+  clear() {
+    for (let i = 0; i < this.cells.length; i++) {
+      this.cells.item(i).classList.remove('marked');
+    }
+
+    if (this.state === 'Play') {
+      this.playPause();
+    }
+  }
+
+  onChangeSpeed($event) {
+    this.speed = 1000 / $event.currentTarget.value;
+console.log(this.speed);
+
+    clearTimeout(this.timeout);
+
+    this.autoplay();
   }
 
   get otherState() {
